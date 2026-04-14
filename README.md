@@ -1,68 +1,174 @@
 # StoryForge
-> **아이디어만 있으면 누구나 자기만의 스토리 쇼츠를 만든다**
+> **스토리든, 정보든, 내 스타일대로 — AI가 영상으로 만든다**
 
-캐릭터 설정 하나로 스토리·이미지·음성·BGM이 모두 AI로 생성되어 쇼츠 한 편이 완성되는 웹 애플리케이션.
-그림을 못 그려도, 글쓰기가 서툴러도, 음악을 몰라도 — 내 캐릭터가 살아 움직이는 영상을 만들 수 있다.
-
----
-
-## 핵심 한 줄 요약
-
-> **"내가 만든 캐릭터의 성격과 말투가 AI 스토리에 반영되고, 그 캐릭터가 영상 전체에서 일관되게 등장한다"**
+어떤 유형의 AI 영상이든 설정 몇 번으로 완성까지 한 번에.
+스토리 창작, 정보 콘텐츠, 자유 영상 — 하나의 앱에서 전부 가능하다.
 
 ---
 
-## 전체 작동 원리
+## 한 줄 핵심
 
-```mermaid
-flowchart TD
-    A([사용자 시작]) --> B[캐릭터 설정 입력]
-
-    subgraph 입력방식 [선택 방식]
-        B --> C1[완전 자동\n장르·분위기만 선택]
-        B --> C2[반자동\n원하는 항목만 입력\n나머지는 AI 자동 완성]
-    end
-
-    C1 --> D[Claude AI\n스토리 + 장면 + 대사 생성]
-    C2 --> D
-
-    D --> E[Stable Diffusion\n장면별 이미지 생성\nIP-Adapter로 캐릭터 일관성 유지]
-    D --> F[ElevenLabs\n캐릭터 성격에 맞는\nAI 음성 생성]
-    D --> G[Suno AI\n장면 분위기에 맞는\nBGM 자동 생성]
-
-    E --> H[ffmpeg + Whisper\n이미지 + 음성 + BGM 합성\n자막 자동 싱크]
-    F --> H
-    G --> H
-
-    H --> I([쇼츠 완성\n미리보기 + 다운로드])
-```
+> **"기존에 AI 영상 하나 만들려면 5개 서비스를 써야 했다. StoryForge는 그걸 하나로 합쳤다."**
 
 ---
 
-## 캐릭터 설정 구조
-
-사용자는 원하는 항목만 입력하면 된다. 비워두면 AI가 자동으로 채운다.
+## 기존 서비스의 문제
 
 ```mermaid
 flowchart LR
-    subgraph 사용자_입력 [사용자 입력 선택사항]
-        A1[이름·나이·직업]
-        A2[성격 키워드\n활발함·냉소적·겁쟁이]
-        A3[말투\n반말·존댓말·고어체]
-        A4[외모 묘사\n파란 단발·안경·교복]
-        A5[그림체 스타일\n애니메이션풍·웹툰풍]
-        A6[장르·배경·분위기]
-        A7[스토리 힌트\n원하는 방향 메모]
+    subgraph 기존_방식 [기존 방식 — 5개 서비스를 직접 연결]
+        A[SD로\n이미지 생성] --> B[ElevenLabs로\n음성 생성]
+        B --> C[Suno로\nBGM 생성]
+        C --> D[ffmpeg으로\n영상 합성]
+        D --> E[자막 툴로\n자막 추가]
     end
 
-    subgraph AI_처리 [AI 자동 완성]
-        B1[비워둔 항목\nAI가 자동 생성]
-        B2[입력한 항목\n그대로 반영]
+    subgraph StoryForge [StoryForge — 설정 몇 번으로 완성]
+        F[설정 입력] --> G[자동 완성]
     end
 
-    A1 & A2 & A3 & A4 & A5 & A6 & A7 --> AI_처리
-    AI_처리 --> C[완성된 캐릭터 설정\n→ 스토리 생성에 반영]
+    기존_방식 -- 번거롭고 어렵다 --> StoryForge
 ```
+
+**문제 1 — 유형이 고정되어 있다**
+StoryShort는 자동 쇼츠만, Katalist는 스토리보드만. 스토리도 정보 콘텐츠도 한 앱에서 되는 서비스가 없다.
+
+**문제 2 — 파이프라인이 쪼개져 있다**
+이미지·음성·BGM·합성을 각각 다른 서비스에서 직접 연결해야 한다.
+
+---
+
+## StoryForge 작동 원리
+
+```mermaid
+flowchart TD
+    A([StoryForge 시작]) --> B{콘텐츠 유형 선택}
+
+    B -- 스토리 모드 --> C1[캐릭터 설정\n이름·성격·말투·외모·화풍]
+    B -- 정보 모드 --> C2[주제 입력\n생활꿀팁·역사·과학\n진행자 캐릭터 선택]
+    B -- 자유 모드 --> C3[장면·대사\n직접 입력]
+
+    C1 --> D[Claude AI\n모드별 대본·장면 자동 생성]
+    C2 --> D
+    C3 --> D
+
+    D --> E[Stable Diffusion\n장면별 이미지 생성\n저작권 안전 화풍 키워드 적용]
+    E --> F[IP-Adapter\n캐릭터 외모 일관성 유지]
+    F --> G[ElevenLabs\n캐릭터 성격에 맞는 AI 음성]
+    G --> H[Suno AI\n장면 분위기 맞춤 오리지널 BGM]
+    H --> I[ffmpeg + Whisper\n영상 합성 + 자막 자동 싱크]
+    I --> J([쇼츠 완성\n미리보기 + 다운로드])
+```
+
+---
+
+## 3가지 콘텐츠 모드
+
+```mermaid
+flowchart LR
+    subgraph 스토리_모드 [모드 1 — 스토리]
+        S1[오리지널 캐릭터 생성\n성격·말투·외모 설정]
+        S2[캐릭터가 주인공인\n스토리 영상]
+        S1 --> S2
+    end
+
+    subgraph 정보_모드 [모드 2 — 정보]
+        I1[주제 입력\n생활꿀팁·역사·과학]
+        I2[AI 진행자 캐릭터가\n설명하는 영상]
+        I1 --> I2
+    end
+
+    subgraph 자유_모드 [모드 3 — 자유]
+        F1[장면·대사\n직접 입력]
+        F2[완전 자유\n창작 영상]
+        F1 --> F2
+    end
+
+    스토리_모드 & 정보_모드 & 자유_모드 --> R[AI 영상 완성\n이미지·음성·BGM·자막 자동]
+```
+
+**스토리 모드 활용 예시**
+- 내가 만든 판타지 캐릭터의 모험 쇼츠
+- 다크 그리티 화풍 오리지널 크로스오버 창작
+- 귀여운 캐릭터의 일상 웹툰 쇼츠
+
+**정보 모드 활용 예시**
+- 고양이 캐릭터가 알려주는 생활 꿀팁 채널
+- AI 박사 캐릭터의 역사·과학 지식 쇼츠
+- 요리 캐릭터의 레시피 팁
+
+---
+
+## 시중 서비스와의 차별점
+
+```mermaid
+quadrantChart
+    title StoryForge 포지셔닝
+    x-axis 낮은 커스텀 --> 높은 커스텀
+    y-axis 단일 유형 --> 다양한 유형
+    quadrant-1 StoryForge 목표 영역
+    quadrant-2 다양하지만 설정 복잡
+    quadrant-3 단순 자동화
+    quadrant-4 자동화 but 유형 고정
+    StoryForge: [0.88, 0.90]
+    Katalist: [0.58, 0.40]
+    StoryShort AI: [0.28, 0.25]
+    MagicLight: [0.22, 0.50]
+    Kling AI: [0.48, 0.30]
+```
+
+| 기능 | StoryForge | StoryShort | Katalist | MagicLight |
+|------|:----------:|:----------:|:--------:|:----------:|
+| 스토리형 영상 | ✅ | ✅ | ⚠️ | ✅ |
+| 정보형 영상 | ✅ | ❌ | ❌ | ⚠️ |
+| 주인공 없는 진행자형 | ✅ | ❌ | ❌ | ❌ |
+| 오리지널 캐릭터 설정 | ✅ | ❌ | ⚠️ | ❌ |
+| 캐릭터 성격→대사 반영 | ✅ | ❌ | ❌ | ❌ |
+| 캐릭터 외모 일관성 | ✅ | ❌ | ✅ | ❌ |
+| 화풍 스타일 선택 | ✅ | ❌ | ❌ | ❌ |
+| AI BGM 생성 | ✅ | ❌ | ❌ | ❌ |
+| 완전 자동 + 커스텀 동시 | ✅ | ❌ | ❌ | ❌ |
+| 전체 파이프라인 통합 | ✅ | ⚠️ | ❌ | ⚠️ |
+| 저작권 안전 설계 | ✅ | ⚠️ | ⚠️ | ⚠️ |
+
+---
+
+## 화풍 스타일 시스템 (저작권 안전)
+
+```mermaid
+flowchart LR
+    subgraph UI_선택 [사용자 UI 선택]
+        U1[다크 그리티 만화풍]
+        U2[섬세한 패턴 만화풍]
+        U3[다이나믹 액션 만화풍]
+        U4[한국 웹툰풍]
+        U5[감성 수채화풍]
+        U6[직접 입력]
+    end
+
+    subgraph 변환 [style_mapper.py 변환]
+        M[작가명·작품명 없는\n화풍 특징 묘사 키워드로 자동 변환]
+    end
+
+    subgraph SD_프롬프트 [SD 최종 프롬프트]
+        P[캐릭터 외모 + 화풍 키워드 + 장면 묘사\n저작권 완전 안전]
+    end
+
+    UI_선택 --> 변환 --> SD_프롬프트 --> R[이미지 생성]
+```
+
+**저작권 안전 원칙**
+
+| UI 표시 | SD 프롬프트 (저작권 안전) |
+|---------|--------------------------|
+| 다크 그리티 만화풍 | `dark gritty manga style, rough bold linework, heavy shadows, intense expression` |
+| 섬세한 패턴 만화풍 | `detailed decorative pattern background, soft gradient shading, flowing motion lines` |
+| 다이나믹 액션 만화풍 | `dynamic action linework, high contrast, dramatic camera angle, speed lines` |
+| 한국 웹툰풍 | `webtoon style, korean manhwa, full color, soft pastel, modern setting` |
+| 감성 수채화풍 | `watercolor illustration, soft brush strokes, pastel palette, dreamy atmosphere` |
+
+작가 이름·작품명·캐릭터명은 프롬프트에 절대 포함하지 않는다.
+화풍의 시각적 특징만 묘사하는 키워드만 사용한다.
 
 ---
 
@@ -70,46 +176,43 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    subgraph Claude_AI [① Claude AI — 스토리 생성]
-        S1[캐릭터 설정 입력]
-        S2[장면 수 결정\n기본 8장면]
-        S3[각 장면별 출력\n장면 묘사 + 대사 + 분위기 + BGM 힌트]
-        S1 --> S2 --> S3
+    subgraph Claude [① Claude AI — 대본 생성]
+        CL1[캐릭터 설정 or 주제 입력]
+        CL2[장면별 대사·묘사·분위기 생성]
+        CL1 --> CL2
     end
 
-    subgraph SD_AI [② Stable Diffusion — 이미지 생성]
-        I1[장면 묘사\n→ 이미지 프롬프트 변환]
-        I2[IP-Adapter 적용\n첫 캐릭터 이미지를\n레퍼런스로 고정]
-        I3[장면마다 동일한\n캐릭터 외모 유지]
-        I1 --> I2 --> I3
+    subgraph SD [② Stable Diffusion — 이미지]
+        SD1[장면 묘사 → 이미지 프롬프트]
+        SD2[저작권 안전 화풍 키워드 추가]
+        SD3[IP-Adapter로 캐릭터 외모 고정]
+        SD1 --> SD2 --> SD3
     end
 
-    subgraph EL_AI [③ ElevenLabs — 음성 생성]
-        V1[대사 텍스트 입력]
-        V2[캐릭터 성격에 맞는\n목소리 선택]
-        V3[감정 표현 반영\n음성 출력]
-        V1 --> V2 --> V3
+    subgraph EL [③ ElevenLabs — 음성]
+        EL1[대사 텍스트]
+        EL2[캐릭터 성격에 맞는 목소리]
+        EL3[감정 표현 반영 음성 출력]
+        EL1 --> EL2 --> EL3
     end
 
-    subgraph Suno_AI [④ Suno AI — BGM 생성]
-        B1[장면 분위기 텍스트 입력]
-        B2[오리지널 BGM 생성\n장면과 완벽히 매칭]
-        B1 --> B2
+    subgraph SU [④ Suno AI — BGM]
+        SU1[장면 분위기 텍스트]
+        SU2[오리지널 BGM 생성\n저작권 없는 완전 새 음악]
+        SU1 --> SU2
     end
 
-    subgraph Compose [⑤ ffmpeg + Whisper — 영상 합성]
-        C1[이미지 시퀀스]
-        C2[음성 파일]
-        C3[BGM 파일]
-        C4[Whisper 자막 싱크]
-        C5[9:16 쇼츠 완성]
-        C1 & C2 & C3 --> C4 --> C5
+    subgraph FF [⑤ ffmpeg + Whisper — 합성]
+        FF1[이미지 + 음성 + BGM 합성]
+        FF2[Whisper 자막 타임스탬프 추출]
+        FF3[9:16 쇼츠 완성]
+        FF1 --> FF2 --> FF3
     end
 
-    Claude_AI --> SD_AI
-    Claude_AI --> EL_AI
-    Claude_AI --> Suno_AI
-    SD_AI & EL_AI & Suno_AI --> Compose
+    Claude --> SD
+    Claude --> EL
+    Claude --> SU
+    SD & EL & SU --> FF
 ```
 
 ---
@@ -118,123 +221,16 @@ flowchart TD
 
 | 분류 | 기술 | 역할 |
 |------|------|------|
-| 프론트엔드 | React + Vite | 웹 UI 전체 |
+| 프론트엔드 | React + Vite | 웹 UI |
 | 백엔드 | FastAPI (Python) | REST API 서버 |
-| 스토리 생성 | Claude Sonnet API | 캐릭터 설정 반영 스토리·대사·장면 묘사 |
-| 이미지 생성 | Stable Diffusion 3.5 | 장면별 이미지 생성 |
+| 대본 생성 | Claude Sonnet API | 스토리·정보·자유 3가지 모드 대본 |
+| 이미지 생성 | Stable Diffusion 3.5 | 장면별 이미지 + 화풍 스타일 |
 | 캐릭터 일관성 | IP-Adapter | 장면마다 동일한 캐릭터 외모 유지 |
 | 음성 생성 | ElevenLabs | 캐릭터 성격별 AI 음성 |
 | BGM 생성 | Suno AI | 장면 분위기 맞춤 오리지널 BGM |
 | 영상 합성 | ffmpeg | 이미지+음성+BGM → 최종 영상 |
 | 자막 | Whisper | 음성 타임스탬프 추출 → 자막 싱크 |
-| DB | PostgreSQL | 캐릭터·프로젝트 저장 |
-
----
-
-## 시중 서비스와의 차별점
-
-### 경쟁 서비스 비교
-
-```mermaid
-quadrantChart
-    title 시중 서비스 포지셔닝
-    x-axis 낮은 커스텀 --> 높은 커스텀
-    y-axis 단순 영상 --> 캐릭터 스토리
-    quadrant-1 StoryForge 목표 영역
-    quadrant-2 캐릭터 중심 but 자동화 약함
-    quadrant-3 단순 자동화
-    quadrant-4 자동화 but 캐릭터 없음
-    StoryForge: [0.85, 0.90]
-    Katalist: [0.60, 0.65]
-    StoryShort AI: [0.30, 0.20]
-    MagicLight: [0.25, 0.45]
-    Kling AI: [0.50, 0.35]
-```
-
-### 기능별 비교표
-
-| 기능 | StoryForge | StoryShort | Katalist | MagicLight |
-|------|:----------:|:----------:|:--------:|:----------:|
-| 오리지널 캐릭터 생성 | ✅ | ❌ | ⚠️ 부분 | ❌ |
-| 캐릭터 성격→대사 반영 | ✅ | ❌ | ❌ | ❌ |
-| 캐릭터 외모 일관성 유지 | ✅ IP-Adapter | ❌ | ✅ | ❌ |
-| AI 스토리 자동 생성 | ✅ | ✅ | ❌ | ⚠️ 템플릿 |
-| AI 음성 생성 | ✅ | ✅ ElevenLabs | ❌ | ✅ |
-| AI BGM 생성 | ✅ Suno | ❌ | ❌ | ❌ |
-| 완전 자동 + 커스텀 동시 | ✅ | ❌ | ❌ | ❌ |
-| 모든 요소 AI 생성 | ✅ | ⚠️ | ❌ | ⚠️ |
-
-> ✅ 지원 | ⚠️ 부분 지원 | ❌ 미지원
-
-### StoryForge만의 핵심 차별점 4가지
-
-**1. 캐릭터가 스토리를 만든다**
-기존 서비스는 스토리를 만들고 거기에 이미지를 붙인다.
-StoryForge는 캐릭터의 성격·말투·관계가 스토리 자체를 결정한다.
-같은 "판타지 로맨스"여도 캐릭터 설정에 따라 완전히 다른 이야기가 나온다.
-
-**2. 장면마다 같은 캐릭터가 나온다**
-기존 AI 영상 서비스의 가장 큰 문제는 "캐릭터 드리프트" — 장면마다 캐릭터 얼굴이 달라지는 것.
-StoryForge는 IP-Adapter로 첫 생성 이미지를 레퍼런스로 고정해서 이 문제를 해결한다.
-
-**3. 완전 자동이거나 완전 커스텀이거나**
-기존 서비스는 완전 자동(선택지 없음) 또는 직접 다 설정하는 방식 둘 중 하나.
-StoryForge는 원하는 것만 입력하고 나머지는 AI가 채우는 유연한 구조를 제공한다.
-
-**4. 그림체 스타일 선택 — 도퀴단 같은 크로스오버 창작 가능**
-체인소맨 풍, 귀멸 풍, 원피스 풍 등 유명 작가 화풍을 선택하거나 직접 입력할 수 있다.
-오리지널 캐릭터에 원하는 화풍을 입혀서 나만의 크로스오버 스토리 영상을 만들 수 있다.
-그림체(스타일) 자체는 저작권 보호 대상이 아니므로 스타일 키워드를 활용하는 방식.
-
----
-
-## StoryForge가 해결하는 문제
-
-```mermaid
-flowchart LR
-    subgraph 기존_문제 [기존의 문제]
-        P1[웹툰·쇼츠를 만들고 싶지만\n그림을 못 그린다]
-        P2[스토리 아이디어는 있지만\n글쓰기가 서툴다]
-        P3[내 캐릭터가 있지만\n영상으로 만들 수단이 없다]
-        P4[기존 AI 도구는\n범용 콘텐츠만 만들어준다]
-    end
-
-    subgraph StoryForge_해결 [StoryForge 해결]
-        S1[AI가 스토리에 맞는\n그림을 자동 생성]
-        S2[캐릭터 설정만 입력하면\nAI가 스토리를 완성]
-        S3[내 캐릭터가 영상 전체에\n일관되게 등장]
-        S4[캐릭터 설정이 반영된\n나만의 오리지널 영상]
-    end
-
-    P1 --> S1
-    P2 --> S2
-    P3 --> S3
-    P4 --> S4
-```
-
----
-
-## 수요 및 시장성
-
-```mermaid
-flowchart LR
-    subgraph 타겟_사용자 [타겟 사용자]
-        U1[그림 못 그리는\n웹툰 작가 지망생]
-        U2[오리지널 캐릭터가 있는\n창작자·팬아트 작가]
-        U3[쇼츠 콘텐츠를 만들고 싶은\n1인 크리에이터]
-        U4[이야기를 영상으로\n만들고 싶은 누구나]
-    end
-
-    subgraph 시장_트렌드 [시장 트렌드]
-        T1[숏폼 콘텐츠 시장\n폭발적 성장 중]
-        T2[AI 크리에이터 도구\n수요 급증]
-        T3[1인 미디어 시대\n제작 도구 민주화]
-    end
-
-    타겟_사용자 --> 수요확인[명확한 수요]
-    시장_트렌드 --> 수요확인
-    수요확인 --> 결론[누구나 쓸 수 있는\n오리지널 콘텐츠 제작 도구]
-```
+| DB | PostgreSQL | 프로젝트·설정 저장 |
 
 ---
 
@@ -244,68 +240,51 @@ flowchart LR
 gantt
     title StoryForge 개발 일정
     dateFormat  YYYY-MM-DD
-    section Phase 1 백엔드 기반
-    FastAPI 초기화 + DB 연동     :p1, 2026-04-07, 4d
-    캐릭터 설정 저장 API          :p2, after p1, 3d
-    Claude API 스토리 생성        :p3, after p2, 5d
-    React 초기화 + 캐릭터 폼 UI  :p4, after p3, 5d
+    section Phase 1 백엔드 + 대본
+    FastAPI 초기화 + DB         :p1, 2026-04-14, 5d
+    Claude API 3모드 대본 생성   :p2, after p1, 5d
+    React 초기화 + 설정 폼 UI   :p3, after p2, 5d
 
-    section Phase 2 이미지 + 음성
-    Stable Diffusion 이미지 생성  :p5, after p4, 5d
-    IP-Adapter 캐릭터 일관성      :p6, after p5, 4d
-    ElevenLabs TTS 연동           :p7, after p6, 3d
+    section Phase 2 이미지 + 화풍
+    style_mapper.py 저작권 안전  :p4, after p3, 3d
+    Stable Diffusion 이미지      :p5, after p4, 4d
+    IP-Adapter 캐릭터 일관성     :p6, after p5, 3d
 
-    section Phase 3 BGM + 영상
-    Suno AI BGM 생성              :p8, after p7, 3d
-    ffmpeg 영상 합성              :p9, after p8, 4d
-    Whisper 자막 싱크             :p10, after p9, 3d
+    section Phase 3 음성 + BGM + 영상
+    ElevenLabs TTS               :p7, after p6, 3d
+    Suno AI BGM                  :p8, after p7, 3d
+    ffmpeg 영상 합성 + 자막      :p9, after p8, 4d
 
     section Phase 4 완성도
-    WebSocket 진행 상황           :p11, after p10, 3d
-    UI/UX 완성도                  :p12, after p11, 5d
-    전체 테스트 + 버그 수정       :p13, after p12, 4d
-    발표 준비                     :p14, after p13, 3d
+    WebSocket 진행 상황          :p10, after p9, 3d
+    UI/UX 완성도                 :p11, after p10, 5d
+    전체 테스트 + 발표 준비      :p12, after p11, 5d
 ```
 
 ---
 
-## 그림체 스타일 시스템
+## 저작권 안전 설계 요약
 
-```mermaid
-flowchart LR
-    subgraph 스타일_선택 [그림체 선택]
-        A1[체인소맨 풍\n타츠키 후지모토]
-        A2[귀멸의 칼날 풍\n고토게 코요하루]
-        A3[원피스 풍\n오다 에이치로]
-        A4[주술회전 풍\n아쿠타미 게게]
-        A5[웹툰 풍\n한국 만화 스타일]
-        A6[직접 입력\n자유 키워드]
-    end
+StoryForge는 처음부터 저작권 침해가 불가능한 구조로 설계되어 있다.
 
-    subgraph 적용_방식 [SD 프롬프트 조합]
-        B1[캐릭터 외모 설정\n파란 단발 빨간 눈 검은 코트]
-        B2[선택한 스타일 키워드\nfujimoto tatsuki style...]
-        B3[장면 묘사\n빗속에서 혼자 서있다]
-        B1 & B2 & B3 --> B4[최종 SD 프롬프트 조합]
-    end
-
-    A1 & A2 & A3 & A4 & A5 & A6 --> B2
-    B4 --> C[Stable Diffusion\n이미지 생성]
-    C --> D[IP-Adapter\n캐릭터 외모 일관성 고정]
-    D --> E[스타일 적용된\n오리지널 캐릭터 이미지]
-```
-
-**핵심 포인트** — 기존 캐릭터를 복제하는 게 아니라 오리지널 캐릭터에 화풍만 입히는 방식.
-도퀴단처럼 특정 만화 느낌의 크로스오버 창작 콘텐츠를 누구나 만들 수 있다.
+모든 이미지는 Stable Diffusion으로 새로 생성하며 기존 이미지를 복제하지 않는다.
+화풍 스타일은 작가명·작품명 없이 시각적 특징을 묘사하는 키워드만 사용한다.
+BGM은 Suno AI로 생성하는 완전 오리지널 음악이다.
+음성은 ElevenLabs로 생성하며 기존 성우·가수의 목소리를 복제하지 않는다.
 
 ---
 
 ## 발표 시연 시나리오
 
-1. **캐릭터 설정 입력** — "겁쟁이 고등학생 마법사, 파란 단발, 존댓말 사용, 공포 코믹 장르" 입력
-2. **AI 스토리 생성** — Claude가 캐릭터 성격이 반영된 8장면 스토리 + 대사 자동 생성
-3. **이미지 생성** — 각 장면에 맞는 이미지 생성, 모든 장면에서 동일한 캐릭터 등장 확인
-4. **음성 + BGM** — 캐릭터 말투에 맞는 AI 음성, 공포 코믹 분위기 BGM 자동 생성
-5. **쇼츠 완성** — 영상 합성 후 자막 포함 쇼츠 다운로드
+**시연 1 — 스토리 모드**
+"파란 단발, 겁쟁이 마법사, 다크 그리티 만화풍, 판타지 코믹" 입력
+→ AI가 캐릭터 성격이 반영된 8장면 스토리 생성
+→ 모든 장면에서 동일한 캐릭터 등장 (IP-Adapter 효과 확인)
+→ 캐릭터 말투에 맞는 AI 음성 + 오리지널 BGM
+→ 자막 포함 쇼츠 완성
 
-> 버튼 몇 번으로 오리지널 캐릭터의 쇼츠가 완성된다.
+**시연 2 — 정보 모드**
+"전자레인지 꿀팁 5가지, 귀여운 고양이 진행자" 입력
+→ AI가 5개 팁을 장면으로 나눠 대본 생성
+→ 귀여운 캐릭터가 설명하는 정보 영상 완성
+→ 캐릭터 없이도 완성된 콘텐츠 채널 영상 제작 가능
