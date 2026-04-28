@@ -17,9 +17,9 @@
 ```mermaid
 flowchart LR
     subgraph 기존_방식 [기존 방식 — 5개 서비스를 직접 연결]
-        A[SD로\n이미지 생성] --> B[ElevenLabs로\n음성 생성]
-        B --> C[Suno로\nBGM 생성]
-        C --> D[ffmpeg으로\n영상 합성]
+        A[이미지 생성\n서비스] --> B[음성 생성\n서비스]
+        B --> C[BGM 생성\n서비스]
+        C --> D[영상 합성\n툴]
         D --> E[자막 툴로\n자막 추가]
     end
 
@@ -52,11 +52,11 @@ flowchart TD
     C2 --> D
     C3 --> D
 
-    D --> E[Stable Diffusion\n장면별 이미지 생성\n저작권 안전 화풍 키워드 적용]
+    D --> E[Nano Banana 2\n장면별 이미지 생성\n저작권 안전 화풍 키워드 적용]
     E --> F[IP-Adapter\n캐릭터 외모 일관성 유지]
-    F --> G[ElevenLabs\n캐릭터 성격에 맞는 AI 음성]
-    G --> H[Suno AI\n장면 분위기 맞춤 오리지널 BGM]
-    H --> I[ffmpeg + Whisper\n영상 합성 + 자막 자동 싱크]
+    F --> G[Edge TTS\n캐릭터 성격에 맞는 AI 음성\n선택 사항]
+    G --> H[Meta MusicGen\n장면 분위기 맞춤 오리지널 BGM\nDB 캐싱으로 재사용]
+    H --> I[MoviePy + Whisper\n영상 합성 + 자막 자동 싱크]
     I --> J([쇼츠 완성\n미리보기 + 다운로드])
 ```
 
@@ -150,16 +150,16 @@ flowchart LR
         M[작가명·작품명 없는\n화풍 특징 묘사 키워드로 자동 변환]
     end
 
-    subgraph SD_프롬프트 [SD 최종 프롬프트]
+    subgraph SD_프롬프트 [이미지 생성 최종 프롬프트]
         P[캐릭터 외모 + 화풍 키워드 + 장면 묘사\n저작권 완전 안전]
     end
 
-    UI_선택 --> 변환 --> SD_프롬프트 --> R[이미지 생성]
+    UI_선택 --> 변환 --> SD_프롬프트 --> R[Nano Banana 2\n이미지 생성]
 ```
 
 **저작권 안전 원칙**
 
-| UI 표시 | SD 프롬프트 (저작권 안전) |
+| UI 표시 | 이미지 프롬프트 (저작권 안전) |
 |---------|--------------------------|
 | 다크 그리티 만화풍 | `dark gritty manga style, rough bold linework, heavy shadows, intense expression` |
 | 섬세한 패턴 만화풍 | `detailed decorative pattern background, soft gradient shading, flowing motion lines` |
@@ -178,59 +178,63 @@ flowchart LR
 flowchart TD
     subgraph Claude [① Claude AI — 대본 생성]
         CL1[캐릭터 설정 or 주제 입력]
-        CL2[장면별 대사·묘사·분위기 생성]
+        CL2[장면별 대사·묘사·분위기 생성\n개발: Haiku / 발표용: Sonnet]
         CL1 --> CL2
     end
 
-    subgraph SD [② Stable Diffusion — 이미지]
-        SD1[장면 묘사 → 이미지 프롬프트]
-        SD2[저작권 안전 화풍 키워드 추가]
-        SD3[IP-Adapter로 캐릭터 외모 고정]
-        SD1 --> SD2 --> SD3
+    subgraph NB [② Nano Banana 2 — 이미지]
+        NB1[장면 묘사 → 이미지 프롬프트]
+        NB2[저작권 안전 화풍 키워드 추가]
+        NB3[IP-Adapter로 캐릭터 외모 고정]
+        NB1 --> NB2 --> NB3
     end
 
-    subgraph EL [③ ElevenLabs — 음성]
-        EL1[대사 텍스트]
-        EL2[캐릭터 성격에 맞는 목소리]
-        EL3[감정 표현 반영 음성 출력]
-        EL1 --> EL2 --> EL3
+    subgraph ET [③ Edge TTS — 음성 선택 사항]
+        ET1[대사 텍스트]
+        ET2[언어·성별별 목소리 매핑\nko-KR-SunHiNeural 등]
+        ET3[use_tts=True일 때만 생성]
+        ET1 --> ET2 --> ET3
     end
 
-    subgraph SU [④ Suno AI — BGM]
-        SU1[장면 분위기 텍스트]
-        SU2[오리지널 BGM 생성\n저작권 없는 완전 새 음악]
-        SU1 --> SU2
+    subgraph MG [④ Meta MusicGen — BGM]
+        MG1[장면 분위기 텍스트]
+        MG2[DB 캐시 hit → 즉시 반환\nmiss → MusicGen 생성 후 저장]
+        MG3[오리지널 BGM 30초\n저작권 없는 완전 새 음악]
+        MG1 --> MG2 --> MG3
     end
 
-    subgraph FF [⑤ ffmpeg + Whisper — 합성]
-        FF1[이미지 + 음성 + BGM 합성]
-        FF2[Whisper 자막 타임스탬프 추출]
-        FF3[9:16 쇼츠 완성]
-        FF1 --> FF2 --> FF3
+    subgraph MP [⑤ MoviePy + Whisper — 합성]
+        MP1[이미지 + 음성 + BGM 합성]
+        MP2[Whisper 자막 타임스탬프 추출]
+        MP3[9:16 쇼츠 완성\n1080×1920 H.264 AAC]
+        MP1 --> MP2 --> MP3
     end
 
-    Claude --> SD
-    Claude --> EL
-    Claude --> SU
-    SD & EL & SU --> FF
+    Claude --> NB
+    Claude --> ET
+    Claude --> MG
+    NB & ET & MG --> MP
 ```
 
 ---
 
 ## 기술 스택
 
-| 분류 | 기술 | 역할 |
-|------|------|------|
-| 프론트엔드 | React + Vite | 웹 UI |
-| 백엔드 | FastAPI (Python) | REST API 서버 |
-| 대본 생성 | Claude Sonnet API | 스토리·정보·자유 3가지 모드 대본 |
-| 이미지 생성 | Stable Diffusion 3.5 | 장면별 이미지 + 화풍 스타일 |
-| 캐릭터 일관성 | IP-Adapter | 장면마다 동일한 캐릭터 외모 유지 |
-| 음성 생성 | ElevenLabs | 캐릭터 성격별 AI 음성 |
-| BGM 생성 | Suno AI | 장면 분위기 맞춤 오리지널 BGM |
-| 영상 합성 | ffmpeg | 이미지+음성+BGM → 최종 영상 |
-| 자막 | Whisper | 음성 타임스탬프 추출 → 자막 싱크 |
-| DB | PostgreSQL | 프로젝트·설정 저장 |
+| 분류 | 기술 | 역할 | 비용 |
+|------|------|------|------|
+| 프론트엔드 | React + Vite | 웹 UI | $0 |
+| 백엔드 | FastAPI (Python) | REST API + WebSocket | $0 |
+| 대본 생성 | Claude API (Haiku→Sonnet) | 스토리·정보·자유 3가지 모드 대본 | ~$0.40 |
+| 이미지 생성 | Nano Banana 2 (Gemini 3.1 Flash Image) | 장면별 이미지 + 화풍 스타일, 애니풍 특화 | ~$1.61 |
+| 캐릭터 일관성 | IP-Adapter (오픈소스) | 장면마다 동일한 캐릭터 외모 유지 | $0 |
+| 음성 생성 | Microsoft Edge TTS | 캐릭터 성격별 AI 음성, API 키 불필요 | $0 |
+| BGM 생성 | Meta MusicGen + DB 캐싱 | 장면 분위기 맞춤 오리지널 BGM, 로컬 실행 | $0 |
+| 영상 합성 | MoviePy + ffmpeg | 이미지+음성+BGM → 최종 영상 | $0 |
+| 자막 | Whisper (로컬) | 음성 타임스탬프 추출 → 자막 싱크 | $0 |
+| DB | PostgreSQL + SQLAlchemy | 프로젝트·설정·BGM 캐시 저장 | $0 |
+| **총합** | | | **~$2 (약 3천원)** |
+
+> **Claude 모델 전략** — 개발/테스트 중 `claude-haiku-4-5-20251001` 사용, 발표용 최종 영상 생성 시 `claude-sonnet-4-6` 으로 교체
 
 ---
 
@@ -241,24 +245,25 @@ gantt
     title StoryForge 개발 일정
     dateFormat  YYYY-MM-DD
     section Phase 1 백엔드 + 대본
-    FastAPI 초기화 + DB         :p1, 2026-04-14, 5d
-    Claude API 3모드 대본 생성   :p2, after p1, 5d
-    React 초기화 + 설정 폼 UI   :p3, after p2, 5d
+    FastAPI 초기화 + DB         :done, p1, 2026-04-14, 5d
+    Claude API 3모드 대본 생성   :done, p2, after p1, 5d
+    React 초기화 + 설정 폼 UI   :done, p3, after p2, 5d
 
     section Phase 2 이미지 + 화풍
-    style_mapper.py 저작권 안전  :p4, after p3, 3d
-    Stable Diffusion 이미지      :p5, after p4, 4d
-    IP-Adapter 캐릭터 일관성     :p6, after p5, 3d
+    style_mapper.py 저작권 안전  :done, p4, after p3, 3d
+    Nano Banana 2 이미지 생성    :done, p5, after p4, 4d
+    IP-Adapter 캐릭터 일관성     :done, p6, after p5, 3d
 
     section Phase 3 음성 + BGM + 영상
-    ElevenLabs TTS               :p7, after p6, 3d
-    Suno AI BGM                  :p8, after p7, 3d
-    ffmpeg 영상 합성 + 자막      :p9, after p8, 4d
+    Edge TTS 음성 생성           :done, p7, after p6, 3d
+    MusicGen BGM + DB 캐싱       :done, p8, after p7, 3d
+    MoviePy 영상 합성 + 자막     :done, p9, after p8, 4d
 
     section Phase 4 완성도
-    WebSocket 진행 상황          :p10, after p9, 3d
-    UI/UX 완성도                 :p11, after p10, 5d
-    전체 테스트 + 발표 준비      :p12, after p11, 5d
+    WebSocket 진행 상황          :done, p10, after p9, 3d
+    UI/UX 완성도                 :done, p11, after p10, 5d
+    E2E 테스트 + 발표 준비       :active, p12, 2026-04-28, 14d
+    발표용 시연 영상 제작         :p13, after p12, 7d
 ```
 
 ---
@@ -267,10 +272,10 @@ gantt
 
 StoryForge는 처음부터 저작권 침해가 불가능한 구조로 설계되어 있다.
 
-모든 이미지는 Stable Diffusion으로 새로 생성하며 기존 이미지를 복제하지 않는다.
+모든 이미지는 Nano Banana 2로 새로 생성하며 기존 이미지를 복제하지 않는다.
 화풍 스타일은 작가명·작품명 없이 시각적 특징을 묘사하는 키워드만 사용한다.
-BGM은 Suno AI로 생성하는 완전 오리지널 음악이다.
-음성은 ElevenLabs로 생성하며 기존 성우·가수의 목소리를 복제하지 않는다.
+BGM은 Meta MusicGen으로 생성하는 완전 오리지널 음악이며 로컬에서 실행된다.
+음성은 Microsoft Edge TTS로 생성하며 기존 성우·가수의 목소리를 복제하지 않는다.
 
 ---
 
